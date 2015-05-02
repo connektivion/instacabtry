@@ -1,0 +1,225 @@
+<html>
+
+<HEAD>
+    <TITLE>INSTACAB</TITLE>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <link href="http://www.konugo.com/favicon.ico" rel="shortcut icon">
+    <meta charset="utf-8">
+    <!--TO INCLUDE BOOTSTRAP CDN FOR THE STYLING-->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/jquery.datetimepicker.css">
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <!--TO OVERRIDE CSS-->
+    <style>
+        body {
+            background: url(./img/wallpaper.png) no-repeat center center fixed;
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+            color: #000;
+            margin-left: 0px;
+        }
+        
+        .scalethis {
+            width: 18%;
+            height: 100%;
+        }
+        
+        #form {
+            z-index: 1;
+            margin-top: auto;
+            padding-top: 20px;
+            margin-left: 0px;
+            margin-right: 0px;
+            padding-left: 0px;
+            padding-right: auto;
+            background-color: #534F4F!important;
+            width: 500px;
+            height: 400px;
+            color: #F0D2D2;
+            font-family: monospace;
+            font-size: 16px;
+            line-height: 1.128571;
+            opacity: 0.99;
+        }
+        
+        .text {
+            width: 260px;
+        }
+        
+        .row {
+            margin-left: 0px;
+            margin-right: 0px;
+        }
+        
+        .nil {
+            background: none;
+        }
+        
+        #map-canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            z-index: 0;
+        }
+        input{
+        	color:black!important;
+        }
+    </style>
+    <!--TO INCLUDE SOCKET IO AND GOOGLE API-->
+
+
+
+</HEAD>
+
+<body>
+    <div class="row">
+        <div class="row" style="height :50px;background-color: #74c8f4;color:#010100;">
+            <div class="col-md-4">
+                <img class="scalethis" src="https://d13yacurqjgara.cloudfront.net/users/43762/screenshots/1457244/map---display.gif"></img>
+            </div>
+            <div class="col-md-8" style="height:53px;">
+                <h3 style="font-size:28px;"><b>InstaCab</b></h3>
+            </div>
+        </div>
+        <div class="row" style="height :25px;  background-color: #A7D400;">
+            <div>
+                <center><small><b>Based on google api</a></b></small></center>
+            </div>
+        </div>
+        <div id="map-canvas"></div>
+        <br>
+        <div class="row" id="form">
+            <div class="container" style="color: #A7D400;margin-left:20px;z-index: 2;"><b>WELCOME TO INSTACAB</b></div>
+
+            <div class="row" id="insertval" style="margin-left: 20px;z-index: 2!important;">
+
+            </div>
+            <div class="row" id="insertform" style="margin-left: 20px;margin-top: 50px;z-index: 2!important;">
+
+            </div>
+            <div class="row" style="margin-top: 50px;margin-left: 20px;z-index: 1;">
+                <div class="col-md-4">
+                    <input type='submit' value="BACK" id="back" style="visibility:hidden;">
+                    <input type='submit' value="NEXT" id="submit">
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+
+    <script src="js/jquery.js" type="text/javascript" charset="UTF-8"></script>
+    <script src="js/jquery.datetimepicker.js" type="text/javascript" charset="UTF-8"></script>
+    <script src="js/bootstrap.min.js" type="text/javascript" charset="UTF-8"></script>
+    <script>
+        var map;
+        var pos;
+
+        function initialize() {
+            var mapOptions = {
+                zoom: 15
+            };
+            map = new google.maps.Map(document.getElementById('map-canvas'),
+                mapOptions);
+
+            // Try HTML5 geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    pos = new google.maps.LatLng(position.coords.latitude,
+                        position.coords.longitude);
+                    console.log("actuallat,long" + position.coords.latitude + ",," + position.coords.longitude);
+                    var infowindow = new google.maps.InfoWindow({
+                        map: map,
+                        position: pos,
+                        content: 'Rescue Station!'
+                    });
+
+                    map.setCenter(pos);
+                }, function() {
+                    handleNoGeolocation(true);
+                });
+            } else {
+                //  IF Browser doesn't support Geolocation
+                handleNoGeolocation(false);
+            }
+        }
+
+        function handleNoGeolocation(errorFlag) {
+            if (errorFlag) {
+                var content = 'Error: The Geolocation service failed.';
+            } else {
+                var content = 'Error: Your browser doesn\'t support geolocation.';
+            }
+
+            var options = {
+                map: map,
+                position: new google.maps.LatLng(60, 105),
+                content: content
+            };
+
+            var infowindow = new google.maps.InfoWindow(options);
+            map.setCenter(options.position);
+        }
+
+
+        var flag=0;
+
+        $('#insertform').load('form1.php');
+        $('#date').datetimepicker({
+            datepicker: false,
+            format: 'H:i',
+        });
+        var pick,drop,date,time;
+        $('#submit').click(function() {
+        	if(flag==0){
+		            pick = $('#pickup').val();
+		            drop = $('#drop').val();
+		            date = $('#date').val();
+		            time = $('#time').val();
+	            if(pick==''||drop==''||date==''||time=='')
+	            	alert("Bro enter the form !");
+	            else{
+		            $('#formone').remove();
+		            $('#insertval').html("Dear customer<br>To confirm your journey<br>from " + pick + " to " + drop + "<br>at " + time + " on " + date + "<br>please enter you credentials!");
+		            $("#insertform").load('form2.php');
+		            $("#back").removeAttr('style');
+		            $('body').addClass("nil");
+		            initialize();
+		            $(this).attr("value","SUBMIT");
+		 			flag=1;
+		        	}
+		        }
+		    else{
+        			var email=$("#email").val();
+        			var phone=$("#phone").val();
+        			if(email!=''&&phone!=''){
+		            	$("#insertval").html("Dear customer<br>Your journey<br>from " + pick + " to " + drop + "<br>at " + time + " on " + date + "<br>is now confirmed.<br>You will be contacted soon!");
+		            	$("#formtwo").remove();
+		            	$("#back").css("visibility","hidden");
+		            	$(this).css("visibility","hidden");
+		            }
+		            else
+		            	alert("enter email/phone bre!");
+        		}
+        	});
+    		
+       
+       
+
+         $("#back").click(function(){
+        	$('#formtwo').remove();
+        	$('#insertval').html("");
+        	$("#insertform").load('form1.php');
+        	$("#submit").attr("value","NEXT");
+        	flag=0;
+        	$(this).css("visibility","hidden");
+
+        });
+
+    </script>
+</body>
+
+</html>
